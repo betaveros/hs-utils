@@ -1,4 +1,4 @@
-all : allshifts bfi everyn factorize fill looper mycal randomline sortchar sortlen square sum tac transpose unamp
+all : allshifts bfi everyn factorize fill grouper looper mycal randomline sortchar sortlen square sum tac transpose unamp
 clean :
 	rm *.hi *.o bin/*
 allshifts : allshifts.hs
@@ -11,6 +11,8 @@ factorize : factorize.hs
 	ghc --make factorize.hs -O -o bin/factorize
 fill : fill.hs
 	ghc --make fill.hs -O -o bin/fill
+grouper : grouper.hs
+	ghc --make grouper.hs -O -o bin/grouper
 looper : looper.hs
 	ghc --make looper.hs -O -o bin/looper
 mycal : mycal.hs
