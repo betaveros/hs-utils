@@ -1,4 +1,4 @@
-all : allshifts amp bfi everyn factorize fill grouper ioc looper mycal randomline sortchar sortlen square sum tac transpose unamp
+all : allshifts amp bfi everyn factorize fill grouper ioc kdfoot looper mycal randomline sortchar sortlen square sum tac transpose unamp
 clean :
 	rm *.hi *.o bin/*
 allshifts : allshifts.hs
@@ -17,6 +17,8 @@ grouper : grouper.hs
 	ghc --make grouper.hs -O -o bin/grouper
 ioc : grouper.hs
 	ghc --make ioc.hs -O -o bin/ioc
+kdfoot : kdfoot.hs
+	ghc --make kdfoot.hs -O -o bin/kdfoot
 looper : looper.hs
 	ghc --make looper.hs -O -o bin/looper
 mycal : mycal.hs
