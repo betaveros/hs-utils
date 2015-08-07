@@ -25,8 +25,10 @@ footParser = (<?> "footParser") $ do
     ds <- takeWhile1 isDigit
     vstring "\">"
     ss <- takeWhile isSpace
-    vstring "<p>"
-    return $ mconcat ["<li id=\"", ?slug, "foot", ds, "\">", ss, "<p><a href=\"#", ?slug, "note", ds, "\">^</a> "]
+    let lis = ["<li id=\"", ?slug, "foot", ds, "\">", ss]
+    let ans = ["<a href=\"#", ?slug, "note", ds, "\">^</a> "]
+    (vstring "<p>" >> return (mconcat (lis ++ ["<p>"] ++ ans)))
+        <|> return (mconcat (lis ++ ["<p>"] ++ ans ++ ["</p>"]))
 
 -- Possible future work: this actually leaves a stray space before it.
 -- Do we want to handle that?
