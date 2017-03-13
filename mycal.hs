@@ -1,12 +1,16 @@
 #!/usr/bin/env runhaskell
 
 import Control.Arrow ((&&&))
+import Control.Monad (forM_)
 import Data.Char (chr)
-import Data.Time.Calendar (Day, toGregorian, fromGregorian, isLeapYear)
-import Data.Time.LocalTime (ZonedTime, localDay, zonedTimeToLocalTime, getZonedTime)
-import Data.Time.Calendar.WeekDate (toWeekDate)
-import Data.Time.Calendar.MonthDay (monthLength)
 import Data.List.Split (chunksOf)
+import Data.Maybe (fromMaybe)
+import Data.Time.Calendar (Day, toGregorian, fromGregorian, isLeapYear, addGregorianMonthsClip)
+import Data.Time.Calendar.MonthDay (monthLength)
+import Data.Time.Calendar.WeekDate (toWeekDate)
+import Data.Time.LocalTime (ZonedTime, localDay, zonedTimeToLocalTime, getZonedTime)
+import System.Environment (getArgs)
+import Text.Read (readMaybe)
 
 cyan :: String
 cyan = chr 27 : "[0;36m"
@@ -18,20 +22,9 @@ extractDay = localDay . zonedTimeToLocalTime
 
 data DayCell = Empty | NormalCell Int | TodayCell Int
 
-lengthOfMonth :: Day -> Int
-lengthOfMonth day = let (y, m, _) = toGregorian day in
-    monthLength (isLeapYear y) m
-
 -- Note, I want Sunday -> 0 instead of 7 as toWeekday gives me.
 toWeekday :: Day -> Int
 toWeekday = (`mod` 7) . ( \(_,_,wd) -> wd ) . toWeekDate
-
-weekDayOfFirst :: Day -> Int
-weekDayOfFirst day = let (y, m, _) = toGregorian day in
-    toWeekday $ fromGregorian y m 1
-
-dayListInMonth :: Day -> [Int]
-dayListInMonth = enumFromTo 1 . lengthOfMonth
 
 toDayCell :: Day -> Int -> DayCell
 toDayCell today d
@@ -39,9 +32,13 @@ toDayCell today d
     | otherwise   = NormalCell d
     where (_,_,todayd) = toGregorian today
 
-weekListInMonth :: Day -> [[DayCell]]
-weekListInMonth day =
-    chunksOf 7 $ replicate (weekDayOfFirst day) Empty ++ map (toDayCell day) (dayListInMonth day)
+makeWeekList :: Integer -> Int -> (Int -> DayCell) -> [[DayCell]]
+makeWeekList y m f = 
+    chunksOf 7 $ replicate (toWeekday $ fromGregorian y m 1) Empty ++ map f [1 .. monthLength (isLeapYear y) m]
+
+weekListInMonth :: Bool -> Day -> [[DayCell]]
+weekListInMonth hi day = let (y, m, _) = toGregorian day in
+    makeWeekList y m (if hi then toDayCell day else NormalCell)
 
 pad :: Int -> String -> String
 pad len s = replicate (len - length s) ' ' ++ s
@@ -74,11 +71,23 @@ weekLabel = " Su Mo Tu We Th Fr Sa "
 monthLabel :: Day -> String
 monthLabel day = let (y,m,_) = toGregorian day in show y ++ "/" ++ show m
 
-printCalendar :: Day -> IO ()
-printCalendar day = do
+printDays :: Bool -> Day -> IO ()
+printDays hi day =
+    mapM_ (putStrLn . weekToLine) $ weekListInMonth hi day
+
+printCalendar :: Integer -> Day -> IO ()
+printCalendar futureMonths day = do
     putStrLn $ replicate 8 ' ' ++ monthLabel day
     putStrLn weekLabel
-    mapM_ (putStrLn . weekToLine) $ weekListInMonth day
+    printDays True day
+    forM_ [1..futureMonths] $ \i ->
+        printDays False (addGregorianMonthsClip i day)
 
 main :: IO ()
-main = fmap extractDay getZonedTime >>= printCalendar
+main = do
+    args <- getArgs
+    let n = case args of
+            [] -> 0
+            [x] -> fromMaybe (error "could not parse args") $ readMaybe x
+            _ -> error "0 or 1 args"
+    fmap extractDay getZonedTime >>= printCalendar n
