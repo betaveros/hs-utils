@@ -1,4 +1,4 @@
-all : allshifts amp bfi everyn factorize fill grouper ioc kdfoot looper mycal randomline sortchar sortlen square sum tac transpose unamp
+all : allshifts amp bfi everyn factorize fill grouper ioc kdfoot looper mycal randomline sortchar sortlen square sqlist sum tac transpose unamp
 clean :
 	rm *.hi *.o bin/*
 allshifts : allshifts.hs
@@ -31,6 +31,8 @@ sortlen : sortlen.hs
 	ghc --make sortlen.hs -O -o bin/sortlen
 square : square.hs
 	ghc --make square.hs -O -o bin/square
+sqlist : sqlist.hs
+	ghc --make sqlist.hs -O -o bin/sqlist
 sum : sum.hs
 	ghc --make sum.hs -O -o bin/sum
 tac : tac.hs
