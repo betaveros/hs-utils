@@ -23,6 +23,8 @@ looper : looper.hs
 	ghc --make looper.hs -O -o bin/looper
 mycal : mycal.hs
 	ghc --make mycal.hs -O -o bin/mycal
+numeral : numeral.hs
+	ghc --make numeral.hs -O -o bin/numeral
 randomline : randomline.hs
 	ghc --make randomline.hs -O -o bin/randomline
 sortchar : sortchar.hs
